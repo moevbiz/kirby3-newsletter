@@ -2,11 +2,14 @@
 namespace Scardoso\Newsletter;
 
 use Scardoso\Newsletter\Subscribers;
+use Scardoso\Newsletter\Mail;
+
 use Kirby\Exception\Exception;
 use Kirby\Cms\Page;
 use Kirby\Toolkit\Html;
 
-class Newsletter
+class Newsletter 
+// TODO extends Mail
 {
     protected $subscribers;
     
@@ -33,7 +36,7 @@ class Newsletter
         // handle required fields
         if (sizeOf($errors) > 0) {
             throw new Exception([
-                'key' => 'scardoso.fieldsvalidation',
+                'key' => 'scardoso.missingContent',
                 'httpCode' => 400,
                 'details' => $errors,
             ]);

@@ -7,7 +7,8 @@ use Kirby\Toolkit\Str;
 
 class SubscriberPage extends Page {
 
-    public function getRequiredFields(): array {
+    public function getRequiredFields(): array 
+    {
         $fields = $this->blueprint()->fields();
         $fields = array_filter($fields, function ($var) {
             if (array_key_exists('required', $var)) {
@@ -15,6 +16,18 @@ class SubscriberPage extends Page {
             }
         });
         return $fields;
+    }
+
+    public function confirmSubscription(): self
+    {
+        $this->changeStatus('listed');
+
+        return $this;
+    }
+
+    public function unsubscribe()
+    {
+        $this->delete(true);
     }
 
     // called when adding subscriber via panel

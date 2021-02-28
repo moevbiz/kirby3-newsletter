@@ -22,7 +22,7 @@ Kirby::plugin('scardoso/newsletter', [
     'options' => [
         'from' => 'tospecify@intheconfig.php',
         'subscribers' => 'subscribers',
-        'confirm' => true,
+        'autoConfirm' => false,
         'confirmationPage' => 'success',
     ],
     'blueprints' => [
@@ -109,18 +109,18 @@ Kirby::plugin('scardoso/newsletter', [
         [
             'pattern' => '/newsletter/subscribers/confirm/(:any)',
             'method' => 'GET',
-            'action'  => function ($uid) {
+            'action'  => function ($slug) {
 
                 // $redirect = option('scardoso.newsletter.confirmationPage');
                 $newsletter = newsletter();
-                $kirby = kirby();
-                $kirby->impersonate('kirby');
+
+                $subscriber = $newsletter->subscribers()->getSubscriber($slug);
 
                 try {
-                    $newsletter->subscribers()->confirmSubscription($uid);
+                    $subscriber->confirmSubscription();
                 }
                 catch(Exception $e) {
-                    return Response::json($e->getMessage());
+                    return Response::json($e);
                 }
 
                 return Response::json('success');
@@ -184,20 +184,6 @@ Kirby::plugin('scardoso/newsletter', [
                     $newsletter = kirby()->page($uri_1 .'/'. $uri_2);
 
                     return $nl->newSend($newsletter, $test);
-
-                    // $to = ($test) ? $page->to()->trim()->split(',') : 'multi';
-                    // if ($to != '') {
-                    //     $subject = $page->subject()->toString();
-                    //     $message = $page->message()->kirbytext()->toString();
-                    //     $result = $nl->send($from, $to, $subject, $message, $page, $test);
-                    // } else {
-                    //     $result = [
-                    //         'message' => t('scardoso.newsletter.noTestMail'),
-                    //         'status' => 400
-                    //     ];
-                    // }
-
-                    // return json_encode($result);
                 },
             ],
         ]   
@@ -211,21 +197,26 @@ Kirby::plugin('scardoso/newsletter', [
             'scardoso.newsletter.sendNewsletter' => 'Send now',
             'scardoso.newsletter.viewSubscribers' => 'View subscribers',
             'scardoso.newsletter.sendTestMail' => 'Send a test mail',
-            'scardoso.newsletter.scheduleMail' => 'Schedule send',
+            'scardoso.newsletter.scheduleMail' => 'Schedule',
             'scardoso.newsletter.noTestMail' => 'Please enter a valid email address for sending the test newsletter',
 
             'error.scardoso.fieldsvalidation' => 'Invalid field content.',
+            'error.scardoso.missingContent' => 'Add some content to your mail first.',
             'error.scardoso.existingEntry' => 'Email address already registered.'
         ],
         'de' => [
             'scardoso.newsletter.t.testRecipients' => 'Test-Email Empfänger',
             'scardoso.newsletter.t.testRecipientsHelpText' => 'Mehrere Adressen könnnen mit einem Komma getrennt werden.',
-            'scardoso.newsletter.t.confirmSendNewsletter' => 'Sind Sie sicher, dass Sie den Newsletter versenden möchten?',
-            'scardoso.newsletter.t.confirmSendTestNewsletter' => 'Sind Sie sicher, dass Sie den Test-Newsletter versenden möchten?',
+            'scardoso.newsletter.t.confirmSendNewsletter' => 'Bist du sicher, dass du den Newsletter versenden möchtest?',
+            'scardoso.newsletter.t.confirmSendTestNewsletter' => 'Bist du sicher, dass du den Test-Newsletter versenden möchstest?',
             'scardoso.newsletter.sendNewsletter' => 'Newsletter versenden',
             'scardoso.newsletter.viewSubscribers' => 'Abonnenten',
             'scardoso.newsletter.sendTestMail' => 'Test-Email senden',
             'scardoso.newsletter.noTestMail' => 'Bitte eine Email-Adresse für den Test-Newsletter angeben',
+
+            'error.scardoso.fieldsvalidation' => 'Ungültige Felder.',
+            'error.scardoso.missingContent' => 'Füge Inhalt zu deiner Mail hinzu.',
+            'error.scardoso.existingEntry' => 'Email-Adresse ist bereits registriert.'
         ],
         'fr' => [
             'scardoso.newsletter.t.testRecipients' => 'Adresses de Réception de la newsletter de test',

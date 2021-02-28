@@ -22,18 +22,19 @@ class Subscribers extends Collection {
         $this->data($this->subscribersPage->children()->toArray());
     }
 
-    public function getPageObject(): Page {
+    public function getPageObject(): Page 
+    {
         return $this->subscribersPage;
     }
 
-    public function getSubscriber(string $slug)
+    public function getSubscriber(string $uid)
     {
-        $subscriber = $this->subscribersPage->children()->find($slug);
+        $subscriber = $this->subscribersPage->find($uid);
 
         return $subscriber;
     }
 
-    public function subscribe(array $subscriberData): Page
+    public function subscribe(array $subscriberData, string $source = 'Form signup'): Page
     {
         // create virtual subscriber page
         $virtualSubscriber = new Page([
@@ -79,10 +80,11 @@ class Subscribers extends Collection {
         // generate security hash
         $subscriber = $subscriber->update([
             'hash' => bin2hex(random_bytes(16)),
+            'source' => $source,
         ]);
 
-        // send a confirmation mail in which the new subscriber has to confirm their subscription
-        if (option('scardoso.newsletter.confirm')) {
+        if ( !option('scardoso.newsletter.autoConfirm')) {
+            // send a confirmation mail in which the new subscriber has to confirm their subscription
             $kirby->email([
                 'from' => option('scardoso.newsletter.from'),
                 'replyTo' => option('scardoso.newsletter.from'),
@@ -92,20 +94,12 @@ class Subscribers extends Collection {
                     . url('newsletter/subscribers/confirm/' 
                     . $subscriber->uid()),
             ]);
+        } else {
+            // auto confirm subscription
+            // TODO this doesnt seem to understand the subscriber page model...
+            // return $subscriber->confirmSubscription();
+            $subscriber = $subscriber->changeStatus('listed');
         }
-
-        return $subscriber;
-    }
-
-    public function confirmSubscription(string $slug): Page
-    {
-        $subscriber = newsletter()->subscribers()->getSubscriber($slug);
-
-        if (!$subscriber) {
-            throw new Exception('No entry.');
-        }
-
-        $subscriber->changeStatus('listed');
 
         return $subscriber;
     }
